@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Hydora</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background: #f4f4f4;
+            color: #222;
+        }
+        header {
+            background: #0078d7;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            border-radius: 8px;
+        }
+        main {
+            margin: 30px auto;
+            max-width: 700px;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+        }
+        #login, #chat {
+            display: none;
+        }
+        #login.active, #chat.active {
+            display: block;
+        }
+        #messages {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #fafafa;
+            margin-bottom: 15px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .username {
+            font-weight: bold;
+            color: #0078d7;
+        }
+        #chatInput {
+            width: 80%;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        #sendBtn {
+            padding: 8px 16px;
+            border: none;
+            background: #0078d7;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #sendBtn:disabled {
+            background: #aaa;
+        }
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Hydora</h1>
+    </header>
+    <main>
+        <!-- Login Screen -->
+        <div id="login" class="active">
+            <h2>Username here</h2>
+            <input type="text" id="usernameInput" placeholder="Enter your username" maxlength="20" autofocus>
+            <button id="confirmBtn">Confirm</button>
+        </div>
+        <!-- Chat Screen -->
+        <div id="chat">
+            <div id="messages"></div>
+            <input type="text" id="chatInput" placeholder="Type a message..." maxlength="200">
+            <button id="sendBtn" disabled>Send</button>
+        </div>
+    </main>
+    <footer>
+        &copy; 2025 By Godissa. All rights reserved.
+    </footer>
+    <script>
+        // Simple in-memory chat (for demo only, not real-time between users)
+        let username = '';
+        const loginDiv = document.getElementById('login');
+        const chatDiv = document.getElementById('chat');
+        const usernameInput = document.getElementById('usernameInput');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const chatInput = document.getElementById('chatInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const messagesDiv = document.getElementById('messages');
+
+        // Enable send button only if input is not empty
+        chatInput.addEventListener('input', () => {
+            sendBtn.disabled = chatInput.value.trim() === '';
+        });
+
+        // Login logic
+        confirmBtn.onclick = () => {
+            const val = usernameInput.value.trim();
+            if (val) {
+                username = val;
+                loginDiv.classList.remove('active');
+                chatDiv.classList.add('active');
+                chatInput.focus();
+                loadMessages();
+            }
+        };
+
+        // Allow Enter to confirm username
+        usernameInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') confirmBtn.click();
+        });
+
+        // Send message
+        sendBtn.onclick = () => {
+            const msg = chatInput.value.trim();
+            if (msg) {
+                addMessage(username, msg);
+                chatInput.value = '';
+                sendBtn.disabled = true;
+            }
+        };
+
+        // Allow Enter to send message
+        chatInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') sendBtn.click();
+        });
+
+        // Store messages in localStorage for demo (simulate multi-user on same browser)
+        function addMessage(user, text) {
+            const messages = JSON.parse(localStorage.getItem('hydora_messages') || '[]');
+            messages.push({ user, text, time: Date.now() });
+            localStorage.setItem('hydora_messages', JSON.stringify(messages));
+            loadMessages();
+        }
+
+        function loadMessages() {
+            messagesDiv.innerHTML = '';
+            const messages = JSON.parse(localStorage.getItem('hydora_messages') || '[]');
+            messages.slice(-100).forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'message';
+                div.innerHTML = `<span class="username">${escapeHtml(msg.user)}:</span> ${escapeHtml(msg.text)}`;
+                messagesDiv.appendChild(div);
+            });
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(str) {
+            return str.replace(/[&<>"']/g, function(m) {
+                return ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                })[m];
+            });
+        }
+
+        // Poll for new messages every second (simulate real-time)
+        setInterval(() => {
+            if (chatDiv.classList.contains('active')) loadMessages();
+        }, 1000);
+    </script>
+</body>
+</html>
+
+<!-- 
+To share your website, you need to upload this HTML file to a web server or a hosting service. 
+Here are some simple options:
+1. Use free static hosting like GitHub Pages, Netlify, or Vercel.
+2. Upload the file to your own web hosting provider.
+3. Share the file directly for others to open locally (not recommended for chat apps).
+
+For GitHub Pages:
+- Create a GitHub repository.
+- Upload this HTML file (rename to index.html).
+- Enable GitHub Pages in repository settings.
+- Share the provided GitHub Pages URL.
+
+For Netlify/Vercel:
+- Sign up and drag-and-drop your HTML file.
+- Share the generated link.
+
+Note: This chat app only works for users on the same browser/device, since it uses localStorage.
+-->
